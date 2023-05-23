@@ -18,7 +18,7 @@ public static class ProfileMappingExtensions
         };
     }
 
-    public static Profile ToProfileModel(this ProfileCreateUpdateDto profile, Guid? profileId)
+    public static Profile ToProfileModel(this ProfileCreateUpdateDto profile, ProfileAddress address, Guid? profileId)
     {
         return new Profile
         {
@@ -26,7 +26,7 @@ public static class ProfileMappingExtensions
             FirstName = profile.FirstName,
             LastName = profile.LastName,
             Email = profile.Email,
-            ProfileAddress = profile.ProfileAddress,
+            ProfileAddress = address,
         };
     }
 }

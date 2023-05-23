@@ -16,12 +16,13 @@ public class ProfileImagesController : BaseController
     }
 
     [HttpPost("{profileId:guid}")]
-    public async Task<IActionResult> UploadNewProfileImage([FromRoute] Guid profileId, [FromForm] IFormFile image)
+    public async Task<IActionResult> UploadNewProfileImage([FromRoute] Guid profileId, IFormFile image)
     {
+        // TODO check why [FromForm] is not needed
         await _profileImageService.UpdateProfileImageAsync(profileId, image);
         return Ok();
     }
-    
+
     [HttpDelete("{profileId:guid}")]
     public async Task<IActionResult> DeleteProfileImage([FromRoute] Guid profileId)
     {
