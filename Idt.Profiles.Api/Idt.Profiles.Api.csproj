@@ -12,7 +12,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers\" />
+      <ProjectReference Include="..\Idt.Profiles.Services\Idt.Profiles.Services.csproj" />
+      <ProjectReference Include="..\Idt.Profiles.Shared\Idt.Profiles.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Middleware\ExceptionHandling\" />
     </ItemGroup>
 
 </Project>
