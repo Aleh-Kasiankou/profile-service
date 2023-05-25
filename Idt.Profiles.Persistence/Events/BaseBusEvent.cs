@@ -1,4 +1,4 @@
-namespace Idt.Profiles.Services.MessageBroker.BusEvents;
+namespace Idt.Profiles.Persistence.Events;
 
 public abstract class BaseBusEvent<T>
 {

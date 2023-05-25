@@ -1,6 +1,6 @@
 using Idt.Profiles.Persistence.Models;
 
-namespace Idt.Profiles.Services.MessageBroker.BusEvents;
+namespace Idt.Profiles.Persistence.Events;
 
 public class ProfileCreatedEvent : ProfileEvent
 {
