@@ -6,6 +6,6 @@ public interface IProfileRepository
 {
     Task<Profile> GetProfileAsync(Guid profileId);
     Task CreateProfileAsync(Profile profile);
-    Task UpdateProfileAsync(Profile profile);
+    Task UpdateProfileAsync(Profile modifiedProfile, Profile savedProfile, bool isRollback = false);
     Task DeleteProfileAsync(Guid profileId);
 }
