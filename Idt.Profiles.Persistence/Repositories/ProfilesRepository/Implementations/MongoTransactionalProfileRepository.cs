@@ -2,6 +2,8 @@ using Idt.Profiles.Persistence.Models;
 using Idt.Profiles.Shared.ConfigurationOptions;
 using Idt.Profiles.Shared.Constants;
 using Idt.Profiles.Shared.Exceptions;
+using Idt.Profiles.Shared.Exceptions.ClientRelatedExceptions;
+using Idt.Profiles.Shared.Exceptions.RollBackExceptions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;

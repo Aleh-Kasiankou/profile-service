@@ -4,6 +4,7 @@ using Idt.Profiles.Dto.MappingExtensions;
 using Idt.Profiles.Services.ProfileImageService;
 using Idt.Profiles.Services.ProfileService;
 using Idt.Profiles.Shared.Exceptions;
+using Idt.Profiles.Shared.Exceptions.SystemCriticalExceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Idt.Profiles.Api.Controllers;

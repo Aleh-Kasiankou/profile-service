@@ -2,6 +2,7 @@ using Hangfire;
 using Hangfire.Mongo;
 using Hangfire.Mongo.Migration.Strategies;
 using Hangfire.Mongo.Migration.Strategies.Backup;
+using Idt.Profiles.Api.Middleware.ExceptionHandling;
 using Idt.Profiles.Persistence.Repositories.ProfileImageRepository;
 using Idt.Profiles.Persistence.Repositories.ProfileImageRepository.Implementations;
 using Idt.Profiles.Persistence.Repositories.ProfilesRepository;
@@ -19,6 +20,7 @@ using Moq;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Packets;
+using Serilog;
 
 namespace Idt.Profiles.Api.Extensions.Configuration;
 
@@ -69,5 +71,24 @@ public static class ConfigurationExtensions
         var mqttClientImplementation = mqttClientMock.Object;
         services.AddSingleton<IMqttClient>(mqttClientImplementation);
         return services;
+    }
+
+    public static IServiceCollection ConfigureRequestPipelineServices(this IServiceCollection services)
+    {
+        services.AddSingleton<ExceptionHandlingMiddleware>();
+        return services;
+    }
+
+    public static WebApplicationBuilder ConfigureSerilogLogging(this WebApplicationBuilder builder)
+    {
+        var logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(builder.Configuration)
+            .Enrich.FromLogContext()
+            .WriteTo.Console()
+            .CreateLogger();
+
+        Log.Logger = logger;
+        builder.Host.UseSerilog(logger);
+        return builder;
     }
 }

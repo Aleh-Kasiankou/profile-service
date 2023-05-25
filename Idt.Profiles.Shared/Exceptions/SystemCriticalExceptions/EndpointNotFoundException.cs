@@ -1,6 +1,8 @@
-namespace Idt.Profiles.Shared.Exceptions;
+using Idt.Profiles.Shared.Exceptions.BaseExceptions;
 
-public class EndpointNotFoundException : ApplicationRelatedException
+namespace Idt.Profiles.Shared.Exceptions.SystemCriticalExceptions;
+
+public class EndpointNotFoundException : ServerRelatedException
 {
     static string FormatExceptionMessage(string actionName) => $"Failed to generate URI for action {actionName}";
 

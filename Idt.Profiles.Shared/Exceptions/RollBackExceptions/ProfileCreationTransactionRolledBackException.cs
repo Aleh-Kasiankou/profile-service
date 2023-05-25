@@ -1,6 +1,8 @@
-namespace Idt.Profiles.Shared.Exceptions;
+using Idt.Profiles.Shared.Exceptions.BaseExceptions;
 
-public class ProfileCreationTransactionRolledBackException : ApplicationRelatedException
+namespace Idt.Profiles.Shared.Exceptions.RollBackExceptions;
+
+public class ProfileCreationTransactionRolledBackException : ServerRelatedException
 {
     private const string DefaultMessage =
         "Profile creation failed. Please try again in a few minutes or contact our support team.";

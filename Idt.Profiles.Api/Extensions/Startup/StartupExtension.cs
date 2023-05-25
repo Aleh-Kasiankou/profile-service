@@ -1,6 +1,7 @@
 using Hangfire;
 using Idt.Profiles.Services.EventSyncHostedService;
 using Idt.Profiles.Shared.Exceptions;
+using Idt.Profiles.Shared.Exceptions.SystemCriticalExceptions;
 
 namespace Idt.Profiles.Api.Extensions.Startup;
 

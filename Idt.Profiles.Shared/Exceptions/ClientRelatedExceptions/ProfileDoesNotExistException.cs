@@ -1,6 +1,8 @@
-namespace Idt.Profiles.Shared.Exceptions;
+using Idt.Profiles.Shared.Exceptions.BaseExceptions;
 
-public class ProfileDoesNotExistException : UserRelatedException
+namespace Idt.Profiles.Shared.Exceptions.ClientRelatedExceptions;
+
+public class ProfileDoesNotExistException : ClientRelatedException
 {
     private static string FormatMessage(Guid profileId) =>
         $"The user profile with the provided id does not exist : {profileId.ToString()}";

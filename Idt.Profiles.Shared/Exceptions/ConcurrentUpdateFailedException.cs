@@ -1,3 +1,5 @@
+using Idt.Profiles.Shared.Exceptions.BaseExceptions;
+
 namespace Idt.Profiles.Shared.Exceptions;
 
 public class ProfileConcurrentUpdateFailedException : ConcurrencyException
