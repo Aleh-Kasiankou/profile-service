@@ -8,7 +8,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Idt.Profiles.Persistence\Idt.Profiles.Persistence.csproj" />
-      <ProjectReference Include="..\Idt.Profiles.Shared\Idt.Profiles.Shared.csproj" />
     </ItemGroup>
 
 </Project>

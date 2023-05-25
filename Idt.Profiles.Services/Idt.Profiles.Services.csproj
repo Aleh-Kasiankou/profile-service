@@ -7,12 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="AddressFormattingService\Implementations\" />
-      <Folder Include="MessageBroker\Implementations\" />
+      <Folder Include="EventSyncService\" />
+      <Folder Include="MessageBrokerService\BusEvents\" />
+      <Folder Include="MessageBrokerService\Implementations\" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Idt.Profiles.Extensions\Idt.Profiles.Extensions.csproj" />
+      <ProjectReference Include="..\Idt.Profiles.Dto\Idt.Profiles.Dto.csproj" />
       <ProjectReference Include="..\Idt.Profiles.Persistence\Idt.Profiles.Persistence.csproj" />
       <ProjectReference Include="..\Idt.Profiles.Shared\Idt.Profiles.Shared.csproj" />
     </ItemGroup>
