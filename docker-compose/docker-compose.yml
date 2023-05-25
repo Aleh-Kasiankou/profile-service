@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  profile:
+    container_name: idt_profiles
+    hostname: idt_profiles
+    depends_on:
+      profiles_mongodb:
+        condition: service_healthy
+    build:
+      context: ../
+      dockerfile: ./Idt.Profiles.Api/Dockerfile
+    
+    ports:
+      - "25580:80"
+      - "25585:443"
+    restart: unless-stopped
+    networks:
+      - idt
+
+  profiles_mongodb:
+    image: mongo:latest
+    
+    healthcheck:
+      test: [ "CMD","mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    
+    ports:
+      - "25584:27017"
+    volumes:
+      - profileMongoVolume:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo_admin
+      MONGO_INITDB_ROOT_PASSWORD: secureM0ngoPassword
+    restart: always
+    networks:
+      - idt
+
+networks:
+  idt:
+    driver: bridge
+    
+volumes:
+  profileMongoVolume:
