@@ -7,7 +7,6 @@ using Idt.Profiles.Shared.Exceptions.RollBackExceptions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using MQTTnet;
 using Polly;
 using Polly.Wrap;
 

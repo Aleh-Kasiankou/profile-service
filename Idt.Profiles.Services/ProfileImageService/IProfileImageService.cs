@@ -1,4 +1,3 @@
-using Idt.Profiles.Persistence.Models;
 using Microsoft.AspNetCore.Http;
 
 namespace Idt.Profiles.Services.ProfileImageService;

@@ -4,7 +4,6 @@ using Idt.Profiles.Persistence.Models;
 using Idt.Profiles.Persistence.Repositories.ProfilesRepository;
 using Idt.Profiles.Services.AddressVerificationService;
 using Idt.Profiles.Services.ProfileImageService;
-using Idt.Profiles.Shared.Exceptions;
 using Idt.Profiles.Shared.Exceptions.ClientRelatedExceptions;
 using Microsoft.AspNetCore.Http;
 using MongoDB.Driver;

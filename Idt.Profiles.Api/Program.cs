@@ -5,9 +5,10 @@ using Idt.Profiles.Api.Middleware.ExceptionHandling;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.ConfigureSerilogLogging();
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddControllers();
+builder.Services.ConfigureSwagger();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.ConfigureRepositories(builder.Configuration);
 builder.Services.ConfigureServices(builder.Configuration);
 builder.Services.ConfigureMessageBroker();
@@ -27,6 +28,4 @@ app.MapControllers();
 app.ConfigureRecurringJobs();
 app.Run();
 
-// TODO DOCUMENT SWAGGER ENDPOINTS
-// TODO URLS TO LOWER CASE
 // TODO IMPROVE SAVED FILES ORGANISATION

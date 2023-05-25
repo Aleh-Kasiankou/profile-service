@@ -91,4 +91,17 @@ public static class ConfigurationExtensions
         builder.Host.UseSerilog(logger);
         return builder;
     }
+
+    public static IServiceCollection ConfigureSwagger(this IServiceCollection services)
+    {
+        services.AddSwaggerGen(options =>
+        {
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
+                "Idt.Profiles.Api.xml"));
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
+                "Idt.Profiles.Dto.xml"));
+        });
+        
+        return services;
+    }
 }

@@ -1,6 +1,5 @@
 
 using MongoDB.Bson.Serialization.Attributes;
-using MQTTnet;
 
 namespace Idt.Profiles.Persistence.Models;
 

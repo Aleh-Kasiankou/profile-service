@@ -2,7 +2,6 @@ using Idt.Profiles.Persistence.Models;
 using Idt.Profiles.Shared.ConfigurationOptions;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using Moq;
 using MQTTnet;
 using MQTTnet.Client;
 
