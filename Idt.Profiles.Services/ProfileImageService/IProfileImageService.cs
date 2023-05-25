@@ -1,10 +1,11 @@
+using Idt.Profiles.Persistence.Models;
 using Microsoft.AspNetCore.Http;
 
 namespace Idt.Profiles.Services.ProfileImageService;
 
 public interface IProfileImageService
 {
-    Task<string?> GetProfileImageUrlAsync(Guid profileId);
+    Task<(MemoryStream FileContent, string FileType)> GetProfileImageAsync(Guid profileId);
     Task UpdateProfileImageAsync(Guid profileId, IFormFile image);
-    Task DeleteProfileImageAsync(Guid profileId);
+    void DeleteProfileImage(Guid profileId);
 }
