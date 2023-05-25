@@ -1,14 +1,21 @@
-using Idt.Profiles.Persistence.Events;
+
+using MongoDB.Bson.Serialization.Attributes;
+using MQTTnet;
 
 namespace Idt.Profiles.Persistence.Models;
 
 public class OutboxEvent
 {
-    public OutboxEvent(ProfileEvent profileEvent)
+    public OutboxEvent(string topic, Guid payload)
     {
-        Event = profileEvent;
+        Topic = topic;
+        Payload = payload;
     }
-    public ProfileEvent Event { get; set; }
+    
+
+    [BsonId]
+    public Guid OutboxEventId { get; set; }
+    public string Topic { get; set; }
+    public Guid Payload { get; set; }
     public bool Sent { get; set; }
-    public bool Confirmed { get; set; }
 }

@@ -13,9 +13,8 @@ public class ProfilesController : BaseController
     private readonly IProfileService _profileService;
     private readonly IProfileImageService _profileImageService;
 
-    private string BuildProfileImageEndpoint(Guid profileId) => Url.Action(nameof(DownloadProfileImageAsync), "Profiles", values: new{profileId}, protocol: Request.Scheme) ??
-                                                                throw new EndpointNotFoundException(
-                                                                    nameof(DownloadProfileImageAsync));
+    private string BuildProfileImageEndpoint(Guid profileId) => Url.Action("DownloadProfileImage", "Profiles", values: new{profileId}, protocol: Request.Scheme) ??
+                                                                throw new EndpointNotFoundException(nameof(DownloadProfileImageAsync));
 
     public ProfilesController(IProfileService profileService, IProfileImageService profileImageService)
     {

@@ -8,6 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Hangfire.AspNetCore" Version="1.8.1" />
+        <PackageReference Include="Hangfire.Mongo" Version="1.9.5" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.4" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     </ItemGroup>
@@ -18,7 +20,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Extensions\" />
       <Folder Include="Middleware\ExceptionHandling\" />
     </ItemGroup>
 

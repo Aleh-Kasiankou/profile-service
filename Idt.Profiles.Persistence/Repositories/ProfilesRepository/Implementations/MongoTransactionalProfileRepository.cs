@@ -1,10 +1,11 @@
-using Idt.Profiles.Persistence.Events;
 using Idt.Profiles.Persistence.Models;
 using Idt.Profiles.Shared.ConfigurationOptions;
+using Idt.Profiles.Shared.Constants;
 using Idt.Profiles.Shared.Exceptions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using MQTTnet;
 using Polly;
 using Polly.Wrap;
 
@@ -16,7 +17,7 @@ public class MongoTransactionalProfileRepository : IProfileRepository
     private readonly IMongoCollection<OutboxEvent> _eventsCollection;
     private readonly ILogger<MongoTransactionalProfileRepository> _logger;
     private readonly Guid _rollbackId = Guid.NewGuid();
-    private PolicyWrap _retryRollbackPolicy;
+    private AsyncPolicyWrap _retryRollbackPolicy;
 
     public MongoTransactionalProfileRepository(IOptions<MongoDbConfigurationOptions> mongoDbConfiguration,
         ILogger<MongoTransactionalProfileRepository> logger)
@@ -45,18 +46,20 @@ public class MongoTransactionalProfileRepository : IProfileRepository
         Guid profileId = Guid.Empty;
         try
         {
+            // TODO BUILD MESSAGES IN METHOD
+            // TODO SAVE TOPICS IN CONST
             await _profilesCollection.InsertOneAsync(profile);
             profileId = profile.ProfileId;
-            var eventToSend = new OutboxEvent(new ProfileCreatedEvent(profile));
+            var eventToSend = new OutboxEvent(MqttTopics.ProfileCreated, profileId);
             await _eventsCollection.InsertOneAsync(eventToSend);
         }
-        catch
+        catch (Exception e)
         {
+            _logger.LogError(e, "Profile creation failed");
             var profileIsSavedToDatabase = profileId != Guid.Empty;
             if (profileIsSavedToDatabase)
             {
-                await _retryRollbackPolicy.Execute(async () => await RollbackProfileCreation(profileId));
-                return;
+                await _retryRollbackPolicy.ExecuteAsync(async () => await RollbackProfileCreation(profileId));
             }
 
             throw;
@@ -84,8 +87,8 @@ public class MongoTransactionalProfileRepository : IProfileRepository
             {
                 throw new ProfileConcurrentUpdateFailedException(modifiedProfile.ProfileId);
             }
-
-            var eventToSend = new OutboxEvent(new ProfileUpdatedEvent(modifiedProfile));
+            
+            var eventToSend = new OutboxEvent(MqttTopics.ProfileUpdated, savedProfile.ProfileId);
             await _eventsCollection.InsertOneAsync(eventToSend);
         }
         catch (ProfileConcurrentUpdateFailedException)
@@ -94,7 +97,7 @@ public class MongoTransactionalProfileRepository : IProfileRepository
         }
         catch
         {
-            await _retryRollbackPolicy.Execute(async () => await RollbackProfileUpdate(savedProfile));
+            await _retryRollbackPolicy.ExecuteAsync(async () => await RollbackProfileUpdate(savedProfile));
         }
     }
 
@@ -106,12 +109,12 @@ public class MongoTransactionalProfileRepository : IProfileRepository
         {
             var idFilter = Builders<Profile>.Filter.Eq(x => x.ProfileId, profileId);
             await _profilesCollection.DeleteOneAsync(idFilter);
-            var eventToSend = new OutboxEvent(new ProfileDeletedEvent(savedProfile));
+            var eventToSend = new OutboxEvent(MqttTopics.ProfileDeleted, profileId);
             await _eventsCollection.InsertOneAsync(eventToSend);
         }
         catch
         {
-            await _retryRollbackPolicy.Execute(async () => await RollbackProfileDeletion(savedProfile));
+            await _retryRollbackPolicy.ExecuteAsync(async () => await RollbackProfileDeletion(savedProfile));
         }
     }
 
@@ -128,22 +131,25 @@ public class MongoTransactionalProfileRepository : IProfileRepository
         // TODO CONFIGURE INTERVALS
         var retryRollbackPolicy = Policy
             .Handle<RollbackFailedException>()
-            .Retry(3);
+            .RetryAsync(3);
 
         var fallBackRetryPolicy = Policy
             .Handle<RollbackFailedException>()
-            .Fallback(() =>
+            .FallbackAsync((cancellationToken) =>
+            {
                 _logger.LogCritical(
                     "Failed to rollback transaction. Please check the rollback logs with RollbackId : {RollbackId}",
-                    _rollbackId));
+                    _rollbackId);
+                return Task.CompletedTask;
+            });
 
-        _retryRollbackPolicy = Policy.Wrap(retryRollbackPolicy, fallBackRetryPolicy);
+        _retryRollbackPolicy = Policy.WrapAsync(retryRollbackPolicy, fallBackRetryPolicy);
     }
 
-    private FilterDefinition<Profile> BuildProfileIdFilterWithOptimisticLock(Guid profileId, Guid ConcurrencyMarker)
+    private FilterDefinition<Profile> BuildProfileIdFilterWithOptimisticLock(Guid profileId, Guid concurrencyMarker)
     {
         var idFilter = Builders<Profile>.Filter.Eq(x => x.ProfileId, profileId);
-        var modifiedAtFilter = Builders<Profile>.Filter.Eq(x => x.ConcurrencyMarker, ConcurrencyMarker);
+        var modifiedAtFilter = Builders<Profile>.Filter.Eq(x => x.ConcurrencyMarker, concurrencyMarker);
         var idFilterWithOptimisticLock = Builders<Profile>.Filter.And(idFilter, modifiedAtFilter);
         return idFilterWithOptimisticLock;
     }
@@ -188,6 +194,8 @@ public class MongoTransactionalProfileRepository : IProfileRepository
                 _rollbackId, previousProfileState.ProfileId, previousProfileState);
             throw new RollbackFailedException($"Failed to rollback update of profile with id {previousProfileState}");
         }
+
+        throw new ProfileUpdateTransactionRolledBackException();
     }
 
     private async Task RollbackProfileDeletion(Profile profile)
@@ -205,5 +213,7 @@ public class MongoTransactionalProfileRepository : IProfileRepository
                 profile.ProfileId, profile);
             throw new RollbackFailedException($"Failed to rollback deletion of profile with id {profile.ProfileId}");
         }
+
+        throw new ProfileDeletionTransactionRolledBackException();
     }
 }
