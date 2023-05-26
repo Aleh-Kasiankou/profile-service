@@ -1,5 +1,6 @@
 using Idt.Profiles.Persistence.Models;
 using Idt.Profiles.Shared.ConfigurationOptions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using MQTTnet;
@@ -14,12 +15,14 @@ public class EventSyncService : IEventSyncService
 
     private readonly IMongoCollection<OutboxEvent> _outboxCollection;
     private readonly IMqttClient _messageBrokerService;
+    private readonly ILogger<EventSyncService> _logger;
     private readonly IList<Guid> _syncedEventIds = new List<Guid>();
 
     public EventSyncService(IOptions<MongoDbConfigurationOptions> mongoDbConfiguration,
-        IMqttClient messageBrokerService)
+        IMqttClient messageBrokerService, ILogger<EventSyncService> logger)
     {
         _messageBrokerService = messageBrokerService;
+        _logger = logger;
         var mongoClient = new MongoClient(mongoDbConfiguration.Value.ConnectionString);
         var database = mongoClient.GetDatabase(mongoDbConfiguration.Value.Database);
         _outboxCollection =
@@ -28,6 +31,7 @@ public class EventSyncService : IEventSyncService
 
     public async Task SyncEvents()
     {
+        _logger.LogDebug("Event sync with Broker started");
         var eventsToSync = await (await _outboxCollection.FindAsync(NotSentFilter))
             .ToListAsync();
         try

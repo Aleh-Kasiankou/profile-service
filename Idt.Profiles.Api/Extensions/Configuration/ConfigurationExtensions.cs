@@ -15,6 +15,8 @@ using Idt.Profiles.Services.AddressFormattingService;
 using Idt.Profiles.Services.AddressFormattingService.Implementations;
 using Idt.Profiles.Services.EventSyncService;
 using Idt.Profiles.Services.EventSyncService.Implementations;
+using Idt.Profiles.Services.FileManagementService;
+using Idt.Profiles.Services.FileManagementService.Implementations;
 using Idt.Profiles.Services.FluentValidationService.Validators;
 using Idt.Profiles.Services.ProfileImageService;
 using Idt.Profiles.Services.ProfileImageService.Implementations;
@@ -64,6 +66,7 @@ public static class ConfigurationExtensions
         services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IProfileImageService, LocalDriveProfileImageService>();
         services.AddScoped<IAddressFormattingService, AddressFormattingService>();
+        services.AddSingleton<IFileManagementService, FileManagementService>();
         return services;
     }
 
