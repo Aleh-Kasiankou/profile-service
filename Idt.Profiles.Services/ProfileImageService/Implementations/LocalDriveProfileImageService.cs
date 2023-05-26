@@ -1,6 +1,7 @@
 using FluentValidation;
 using Idt.Profiles.Persistence.Models;
 using Idt.Profiles.Persistence.Repositories.ProfileImageRepository;
+using Idt.Profiles.Persistence.Repositories.ProfilesRepository;
 using Idt.Profiles.Shared.ConfigurationOptions;
 using Idt.Profiles.Shared.Exceptions.SystemCriticalExceptions;
 using Microsoft.AspNetCore.Http;
@@ -11,6 +12,7 @@ namespace Idt.Profiles.Services.ProfileImageService.Implementations;
 public class LocalDriveProfileImageService : IProfileImageService
 {
     private readonly LocalDriveImageStorageOptions _storageOptions;
+    private readonly IProfileRepository _profileRepository;
     private readonly IProfileImageInfoRepository _imageInfoRepository;
     private readonly IValidator<IFormFile> _imageValidator;
     
@@ -23,10 +25,11 @@ public class LocalDriveProfileImageService : IProfileImageService
     }
 
     public LocalDriveProfileImageService(IOptions<LocalDriveImageStorageOptions> storageOptions,
-        IProfileImageInfoRepository imageInfoRepository, IValidator<IFormFile> imageValidator)
+        IProfileImageInfoRepository imageInfoRepository, IValidator<IFormFile> imageValidator, IProfileRepository profileRepository)
     {
         _imageInfoRepository = imageInfoRepository;
         _imageValidator = imageValidator;
+        _profileRepository = profileRepository;
         _storageOptions = storageOptions.Value;
         CreateImageDirectoryIfNeeded(_storageOptions.ImageDirectoryName);
     }
@@ -66,6 +69,7 @@ public class LocalDriveProfileImageService : IProfileImageService
 
     public async Task UpdateProfileImageAsync(Guid profileId, IFormFile image)
     {
+        await _profileRepository.GetProfileAsync(profileId);
         var profileImageName = profileId.ToString();
         var imageExists = CheckIfProfileImageExists(profileImageName, out var filePath);
         if (imageExists)

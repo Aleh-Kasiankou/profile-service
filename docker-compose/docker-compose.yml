@@ -17,7 +17,10 @@ services:
     restart: unless-stopped
     networks:
       - idt
-
+    
+    volumes:
+      - ../Idt.Profiles.Api/profile_images:/src/Idt.Profiles.Api/profile_images
+        
   profiles_mongodb:
     image: mongo:latest
     
@@ -44,4 +47,5 @@ networks:
     driver: bridge
     
 volumes:
+  profileImagesVolume:
   profileMongoVolume:

@@ -19,12 +19,6 @@
         <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="7.0.6" />
     </ItemGroup>
     
-   <!-- <ItemGroup>
-        <Content Include="..\wwwroot\sample_images\*">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>-->
-
     <ItemGroup>
       <ProjectReference Include="..\Idt.Profiles.Services\Idt.Profiles.Services.csproj" />
       <ProjectReference Include="..\Idt.Profiles.Shared\Idt.Profiles.Shared.csproj" />
@@ -33,9 +27,6 @@
     <ItemGroup>
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
-      </Content>
-      <Content Update="..\wwwroot\sample_images\blank-profile-picture.webp">
-        <Link>profile_images\blank-profile-picture.webp</Link>
       </Content>
     </ItemGroup>
     <PropertyGroup>

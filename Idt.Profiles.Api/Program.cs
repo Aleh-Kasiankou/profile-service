@@ -29,5 +29,3 @@ app.MapControllers();
 app.ConfigureRecurringJobs();
 await app.SetUpDbIndices();
 app.Run();
-
-// TODO IMPROVE SAVED FILES ORGANISATION
