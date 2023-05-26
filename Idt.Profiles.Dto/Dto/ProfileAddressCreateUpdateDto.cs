@@ -32,7 +32,7 @@ public class ProfileAddressCreateUpdateDto
     /// </summary>
     [Required] public string ZipCode { get; set; }
     /// <summary>
-    /// Country code (ISO 3166)
+    /// Country code (ISO 3166 Alpha-2)
     /// </summary>
     [Required] public string CountryCode { get; set; }
 }

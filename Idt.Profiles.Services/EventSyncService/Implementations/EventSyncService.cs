@@ -5,7 +5,7 @@ using MongoDB.Driver;
 using MQTTnet;
 using MQTTnet.Client;
 
-namespace Idt.Profiles.Services.EventSyncHostedService.Implementations;
+namespace Idt.Profiles.Services.EventSyncService.Implementations;
 
 public class EventSyncService : IEventSyncService
 {

@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using FluentValidation;
 using Idt.Profiles.Shared.Exceptions.BaseExceptions;
 using Serilog;
 
@@ -8,13 +9,19 @@ namespace Idt.Profiles.Api.Middleware.ExceptionHandling;
 public class ExceptionHandlingMiddleware : IMiddleware
 {
     private const string UnhandledExceptionMessage =
-        "The server failed to handle the request. If this error persists, please contact our support team.";
+        "The server failed to handle this request. Please try again in a few minutes. If this error persists, please contact our support team.";
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         try
         {
             await next(context);
+        }
+        catch (ValidationException e)
+        {
+            Log.Debug(e, "Validation exception occured");
+            var errorMessage = string.Join(". ", e.Errors);
+            await WriteExceptionMessageToResponse(errorMessage , StatusCodes.Status400BadRequest, context);
         }
         catch (ClientRelatedException e)
         {
@@ -29,7 +36,7 @@ public class ExceptionHandlingMiddleware : IMiddleware
         catch (ServerRelatedException e)
         {
             Log.Error(e, "Server exception occured");
-            await WriteExceptionMessageToResponse(e.Message, StatusCodes.Status500InternalServerError, context);
+            await WriteExceptionMessageToResponse(UnhandledExceptionMessage, StatusCodes.Status500InternalServerError, context);
         }
         catch (Exception e)
         {

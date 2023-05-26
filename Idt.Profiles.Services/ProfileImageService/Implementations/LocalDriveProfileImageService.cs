@@ -1,6 +1,8 @@
+using FluentValidation;
 using Idt.Profiles.Persistence.Models;
 using Idt.Profiles.Persistence.Repositories.ProfileImageRepository;
 using Idt.Profiles.Shared.ConfigurationOptions;
+using Idt.Profiles.Shared.Exceptions.SystemCriticalExceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
@@ -11,10 +13,7 @@ public class LocalDriveProfileImageService : IProfileImageService
 {
     private readonly LocalDriveImageStorageOptions _storageOptions;
     private readonly IProfileImageInfoRepository _imageInfoRepository;
-
-    // TODO MAKE SURE EXCEPTION DOESN'T CAUSE ISSUES
-    // TODO CREATE DISTINCT DBSET WITH IMAGES AND USE REPO HERE, CASCADE DELETE THEM WITHIN PROFILE IF NEEDED
-    // TODO CHECK IF WE SHOULD LIMIT FILE EXTENSIONS
+    private readonly IValidator<IFormFile> _imageValidator;
 
     private static string BuildFilePath(string imagesDirectoryName, string fileName) =>
         Path.Combine(imagesDirectoryName, fileName);
@@ -28,9 +27,10 @@ public class LocalDriveProfileImageService : IProfileImageService
     }
 
     public LocalDriveProfileImageService(IOptions<LocalDriveImageStorageOptions> storageOptions,
-        IProfileImageInfoRepository imageInfoRepository)
+        IProfileImageInfoRepository imageInfoRepository, IValidator<IFormFile> imageValidator)
     {
         _imageInfoRepository = imageInfoRepository;
+        _imageValidator = imageValidator;
         _storageOptions = storageOptions.Value;
         CreateImageDirectoryIfNeeded(_storageOptions.ImageDirectoryName);
     }
@@ -49,14 +49,16 @@ public class LocalDriveProfileImageService : IProfileImageService
         }
         else
         {
-            // TODO USE CONFIG
-            filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./blank-profile-picture.webp");
-            fileType = "image/webp";
+            filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _storageOptions.DefaultProfileImageName);
+            fileType = _storageOptions.DefaultProfileImageType;
         }
 
         if (!File.Exists(filePath))
         {
-            //TODO throw exception
+            throw new FailedToGetProfileImageFromDriveException(
+                $"Failed to get image at the following path: {filePath}. " +
+                $"Either the image for profile with id {profileId} has been deleted with errors " +
+                $"or default profile image has been moved.");
         }
 
         await using var file = File.OpenRead(filePath);
@@ -75,29 +77,26 @@ public class LocalDriveProfileImageService : IProfileImageService
             DeleteProfileImage(profileId);
         }
 
-        // TODO USE METHODS?
-        // writing to drive
-        await using var file = File.OpenWrite(filePath);
-        await image.CopyToAsync(file);
-        await file.FlushAsync();
-        
-        // TODO VALIDATE WHETHER IMAGE
-
-        // writing to database
-        var profileImageInfo = new ProfileImageInfo
+        _imageValidator.ValidateAndThrow(image);
+        await WriteImageToLocalDriveAsync(filePath, image);
+        await _imageInfoRepository.SaveProfileImageInfoAsync(new ProfileImageInfo
         {
             ProfileId = profileId,
             FileName = profileId.ToString(),
             FileType = image.ContentType
-        };
-        
-
-        await _imageInfoRepository.SaveProfileImageInfoAsync(profileImageInfo);
+        });
     }
 
     public void DeleteProfileImage(Guid profileId)
     {
         _imageInfoRepository.DeleteProfileImageInfoAsync(profileId);
+    }
+
+    private async Task WriteImageToLocalDriveAsync(string filePath, IFormFile image)
+    {
+        await using var file = File.OpenWrite(filePath);
+        await image.CopyToAsync(file);
+        await file.FlushAsync();
     }
 
     private bool CheckIfProfileImageExists(string imageFileName, out string filePath)

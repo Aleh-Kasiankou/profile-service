@@ -9,9 +9,8 @@ public class ProfileImageInfoRepository : IProfileImageInfoRepository
 {
     private readonly IMongoCollection<ProfileImageInfo> _profilesImagesCollection;
 
-    public ProfileImageInfoRepository(IOptions<MongoDbConfigurationOptions> mongoDbConfiguration)
+    public ProfileImageInfoRepository(IMongoClient mongoClient, IOptions<MongoDbConfigurationOptions> mongoDbConfiguration)
     {
-        var mongoClient = new MongoClient(mongoDbConfiguration.Value.ConnectionString);
         var database = mongoClient.GetDatabase(mongoDbConfiguration.Value.Database);
         _profilesImagesCollection =
             database.GetCollection<ProfileImageInfo>(mongoDbConfiguration.Value.ProfileImagesCollection);

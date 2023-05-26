@@ -13,6 +13,7 @@ builder.Services.ConfigureRepositories(builder.Configuration);
 builder.Services.ConfigureServices(builder.Configuration);
 builder.Services.ConfigureMessageBroker();
 builder.Services.ConfigureRequestPipelineServices();
+builder.Services.ConfigureValidators();
 
 var app = builder.Build();
 
@@ -26,6 +27,7 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 app.ConfigureRecurringJobs();
+await app.SetUpDbIndices();
 app.Run();
 
 // TODO IMPROVE SAVED FILES ORGANISATION

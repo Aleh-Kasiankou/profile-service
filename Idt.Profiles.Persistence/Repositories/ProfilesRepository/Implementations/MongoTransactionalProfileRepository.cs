@@ -20,18 +20,16 @@ public class MongoTransactionalProfileRepository : IProfileRepository
     private readonly Guid _rollbackId = Guid.NewGuid();
     private AsyncPolicyWrap _retryRollbackPolicy;
 
-    public MongoTransactionalProfileRepository(IOptions<MongoDbConfigurationOptions> mongoDbConfiguration,
+    public MongoTransactionalProfileRepository(IMongoClient mongoClient,
+        IOptions<MongoDbConfigurationOptions> mongoDbConfiguration,
+        IOptions<MongoRetryRollbackPolicyOptions> mongoRetryRollbackConfiguration,
         ILogger<MongoTransactionalProfileRepository> logger)
     {
         _logger = logger;
-        var mongoClient = new MongoClient(mongoDbConfiguration.Value.ConnectionString);
         var database = mongoClient.GetDatabase(mongoDbConfiguration.Value.Database);
         _profilesCollection = database.GetCollection<Profile>(mongoDbConfiguration.Value.ProfilesCollection);
         _eventsCollection = database.GetCollection<OutboxEvent>(mongoDbConfiguration.Value.EventOutboxCollection);
-
-        // TODO OPTIMIZE. Perhaps pass rollback policy from above and use config? 
-        CreateUniqueUsernameIndex();
-        CreateRollbackRetryPolicy();
+        UseRollbackRetryPolicy(mongoRetryRollbackConfiguration.Value);
     }
 
     public async Task<Profile> GetProfileAsync(Guid profileId)
@@ -47,8 +45,6 @@ public class MongoTransactionalProfileRepository : IProfileRepository
         Guid profileId = Guid.Empty;
         try
         {
-            // TODO BUILD MESSAGES IN METHOD
-            // TODO SAVE TOPICS IN CONST
             await _profilesCollection.InsertOneAsync(profile);
             profileId = profile.ProfileId;
             var eventToSend = new OutboxEvent(MqttTopics.ProfileCreated, profileId);
@@ -88,7 +84,7 @@ public class MongoTransactionalProfileRepository : IProfileRepository
             {
                 throw new ProfileConcurrentUpdateFailedException(modifiedProfile.ProfileId);
             }
-            
+
             var eventToSend = new OutboxEvent(MqttTopics.ProfileUpdated, savedProfile.ProfileId);
             await _eventsCollection.InsertOneAsync(eventToSend);
         }
@@ -119,20 +115,13 @@ public class MongoTransactionalProfileRepository : IProfileRepository
         }
     }
 
-    private void CreateUniqueUsernameIndex()
+    private void UseRollbackRetryPolicy(MongoRetryRollbackPolicyOptions retryConfig)
     {
-        var profileIndexKeys = Builders<Profile>.IndexKeys;
-        var indexModel = new CreateIndexModel<Profile>(profileIndexKeys.Ascending(x => x.UserName),
-            new CreateIndexOptions { Unique = true });
-        _profilesCollection.Indexes.CreateOne(indexModel);
-    }
-
-    private void CreateRollbackRetryPolicy()
-    {
-        // TODO CONFIGURE INTERVALS
         var retryRollbackPolicy = Policy
             .Handle<RollbackFailedException>()
-            .RetryAsync(3);
+            .WaitAndRetryAsync(retryConfig.NumberOfRetryRollbackAttempts, (attempt) => TimeSpan.FromMilliseconds(
+                retryConfig.MillisecondsBetweenRetries
+            ));
 
         var fallBackRetryPolicy = Policy
             .Handle<RollbackFailedException>()

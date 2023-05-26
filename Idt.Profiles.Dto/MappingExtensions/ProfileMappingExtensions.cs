@@ -32,28 +32,4 @@ public static class ProfileMappingExtensions
         };
     }
     
-    public static ProfileAddress ToProfileAddress(this ProfileAddressCreateUpdateDto addressDto)
-    {
-        // TODO INJECT ADDRESS FORMATTER
-        (string AddressLine1, string AddressLine2) FormatAddress()
-        {
-            var addressLine1 = $"{addressDto.Building} {addressDto.City}";
-            var addressLine2 = addressDto.Apartment is null ? "" : $"apt. {addressDto.Apartment}";
-            return (addressLine1, addressLine2);
-        }
-
-        var addressLines = FormatAddress();
-        return new ProfileAddress
-        {
-            Apartment = addressDto.Apartment,
-            Building = addressDto.Building,
-            Street = addressDto.Street,
-            City = addressDto.City,
-            State = addressDto.State,
-            ZipCode = addressDto.ZipCode,
-            CountryCode = addressDto.CountryCode,
-            AddressLine1 = addressLines.AddressLine1,
-            AddressLine2 = addressLines.AddressLine2
-        };
-    }
 }

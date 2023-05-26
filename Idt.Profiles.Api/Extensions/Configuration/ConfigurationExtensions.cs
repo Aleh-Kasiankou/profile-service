@@ -1,21 +1,26 @@
+using FluentValidation;
 using Hangfire;
 using Hangfire.Mongo;
 using Hangfire.Mongo.Migration.Strategies;
 using Hangfire.Mongo.Migration.Strategies.Backup;
 using Idt.Profiles.Api.Middleware.ExceptionHandling;
+using Idt.Profiles.Dto.Dto;
+using Idt.Profiles.Persistence.Models;
 using Idt.Profiles.Persistence.Repositories.ProfileImageRepository;
 using Idt.Profiles.Persistence.Repositories.ProfileImageRepository.Implementations;
 using Idt.Profiles.Persistence.Repositories.ProfilesRepository;
 using Idt.Profiles.Persistence.Repositories.ProfilesRepository.Implementations;
-using Idt.Profiles.Services.AddressVerificationService;
-using Idt.Profiles.Services.AddressVerificationService.Implementations;
-using Idt.Profiles.Services.EventSyncHostedService;
-using Idt.Profiles.Services.EventSyncHostedService.Implementations;
+using Idt.Profiles.Services.AddressFormattingService;
+using Idt.Profiles.Services.AddressFormattingService.Implementations;
+using Idt.Profiles.Services.EventSyncService;
+using Idt.Profiles.Services.EventSyncService.Implementations;
+using Idt.Profiles.Services.FluentValidationServices.Validators;
 using Idt.Profiles.Services.ProfileImageService;
 using Idt.Profiles.Services.ProfileImageService.Implementations;
 using Idt.Profiles.Services.ProfileService;
 using Idt.Profiles.Services.ProfileService.Implementations;
 using Idt.Profiles.Shared.ConfigurationOptions;
+using MongoDB.Driver;
 using Moq;
 using MQTTnet;
 using MQTTnet.Client;
@@ -30,6 +35,7 @@ public static class ConfigurationExtensions
         IConfiguration configuration)
     {
         services.Configure<MongoDbConfigurationOptions>(configuration.GetSection("MongoDb"));
+        services.AddSingleton<IMongoClient>(new MongoClient(configuration["MongoDb:ConnectionString"]));
         services.AddScoped<IProfileRepository, MongoTransactionalProfileRepository>();
         services.AddScoped<IProfileImageInfoRepository, ProfileImageInfoRepository>();
         return services;
@@ -38,6 +44,7 @@ public static class ConfigurationExtensions
     public static IServiceCollection ConfigureServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<LocalDriveImageStorageOptions>(configuration.GetSection("ImageStorage"));
+        services.Configure<MongoRetryRollbackPolicyOptions>(configuration.GetSection("MongoRollbackRetryPolicy"));
         services.AddHangfire(x => x.UseMongoStorage(configuration["MongoDb:ConnectionString"],
             configuration["MongoDb:HangfireDatabase"], new MongoStorageOptions
             {
@@ -54,7 +61,7 @@ public static class ConfigurationExtensions
         services.AddTransient<IEventSyncService, EventSyncService>();
         services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IProfileImageService, LocalDriveProfileImageService>();
-        services.AddScoped<IAddressVerificationService, DummyAddressVerificationService>();
+        services.AddScoped<IAddressFormattingService, AddressFormattingService>();
         return services;
     }
 
@@ -101,7 +108,15 @@ public static class ConfigurationExtensions
             options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
                 "Idt.Profiles.Dto.xml"));
         });
-        
+
+        return services;
+    }
+
+    public static IServiceCollection ConfigureValidators(this IServiceCollection services)
+    {
+        services.AddScoped<IValidator<Profile>, ProfileValidator>();   
+        services.AddScoped<IValidator<IFormFile>, ImageFileValidator>();
+        services.AddScoped<IValidator<ProfileAddressCreateUpdateDto>, DummyAddressValidator>();
         return services;
     }
 }

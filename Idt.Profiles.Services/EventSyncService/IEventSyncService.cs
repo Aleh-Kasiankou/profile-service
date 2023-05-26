@@ -1,4 +1,4 @@
-namespace Idt.Profiles.Services.EventSyncHostedService;
+namespace Idt.Profiles.Services.EventSyncService;
 
 public interface IEventSyncService
 {

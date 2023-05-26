@@ -1,8 +1,9 @@
+using FluentValidation;
 using Idt.Profiles.Dto.Dto;
 using Idt.Profiles.Dto.MappingExtensions;
 using Idt.Profiles.Persistence.Models;
 using Idt.Profiles.Persistence.Repositories.ProfilesRepository;
-using Idt.Profiles.Services.AddressVerificationService;
+using Idt.Profiles.Services.AddressFormattingService;
 using Idt.Profiles.Services.ProfileImageService;
 using Idt.Profiles.Shared.Exceptions.ClientRelatedExceptions;
 using Microsoft.AspNetCore.Http;
@@ -12,16 +13,22 @@ namespace Idt.Profiles.Services.ProfileService.Implementations;
 
 public class ProfileService : IProfileService
 {
-    private readonly IAddressVerificationService _addressService;
     private readonly IProfileRepository _profileRepository;
+    private readonly IAddressFormattingService _addressFormattingService;
     private readonly IProfileImageService _profileImageService;
+    private readonly IValidator<Profile> _profileValidator;
+    private readonly IValidator<ProfileAddressCreateUpdateDto> _addressValidator;
 
-    public ProfileService(IProfileRepository profileRepository, IProfileImageService profileImageService,
-        IAddressVerificationService addressService)
+    public ProfileService(IValidator<Profile> profileValidator,
+        IValidator<ProfileAddressCreateUpdateDto> addressValidator, IProfileRepository profileRepository,
+        IAddressFormattingService addressFormattingService,
+        IProfileImageService profileImageService)
     {
+        _profileValidator = profileValidator;
+        _addressValidator = addressValidator;
         _profileRepository = profileRepository;
+        _addressFormattingService = addressFormattingService;
         _profileImageService = profileImageService;
-        _addressService = addressService;
     }
 
     public async Task<Profile> GetProfileAsync(Guid profileId)
@@ -33,8 +40,10 @@ public class ProfileService : IProfileService
     {
         try
         {
-            var address = _addressService.VerifyAddress(profile.ProfileAddress);
+            await _addressValidator.ValidateAndThrowAsync(profile.ProfileAddress);
+            var address = _addressFormattingService.FormatAddress(profile.ProfileAddress);
             var profileModel = profile.ToProfileModel(address, null);
+            _profileValidator.ValidateAndThrow(profileModel);
             await _profileRepository.CreateProfileAsync(profileModel);
             return profileModel;
         }
@@ -52,7 +61,8 @@ public class ProfileService : IProfileService
     public async Task<Profile> UpdateProfileInfoAsync(Guid profileId, ProfileCreateUpdateDto profile)
     {
         var savedProfile = await GetProfileAsync(profileId);
-        var address = _addressService.VerifyAddress(profile.ProfileAddress);
+        await _addressValidator.ValidateAndThrowAsync(profile.ProfileAddress);
+        var address = _addressFormattingService.FormatAddress(profile.ProfileAddress);
         var modifiedProfile = profile.ToProfileModel(address, profileId);
         return await UpdateProfileAsync(modifiedProfile, savedProfile);
     }
@@ -70,6 +80,7 @@ public class ProfileService : IProfileService
 
     private async Task<Profile> UpdateProfileAsync(Profile modifiedProfile, Profile savedProfile)
     {
+        _profileValidator.ValidateAndThrow(modifiedProfile);
         await _profileRepository.UpdateProfileAsync(modifiedProfile, savedProfile);
         return modifiedProfile;
     }
