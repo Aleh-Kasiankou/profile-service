@@ -1,7 +1,7 @@
 using FluentValidation;
 using Idt.Profiles.Dto.Dto;
 
-namespace Idt.Profiles.Services.FluentValidationServices.Validators;
+namespace Idt.Profiles.Services.FluentValidationService.Validators;
 
 public class DummyAddressValidator : AbstractValidator<ProfileAddressCreateUpdateDto>
 {

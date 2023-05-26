@@ -8,16 +8,12 @@ using Microsoft.Extensions.Options;
 
 namespace Idt.Profiles.Services.ProfileImageService.Implementations;
 
-// TODO CHECK RECOMMENDED METHOD PROPS ORDER
 public class LocalDriveProfileImageService : IProfileImageService
 {
     private readonly LocalDriveImageStorageOptions _storageOptions;
     private readonly IProfileImageInfoRepository _imageInfoRepository;
     private readonly IValidator<IFormFile> _imageValidator;
-
-    private static string BuildFilePath(string imagesDirectoryName, string fileName) =>
-        Path.Combine(imagesDirectoryName, fileName);
-
+    
     private static void CreateImageDirectoryIfNeeded(string directoryName)
     {
         if (!Directory.Exists(directoryName))
@@ -49,7 +45,7 @@ public class LocalDriveProfileImageService : IProfileImageService
         }
         else
         {
-            filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _storageOptions.DefaultProfileImageName);
+            filePath = BuildFilePath(_storageOptions.ImageDirectoryName, _storageOptions.DefaultProfileImageName);
             fileType = _storageOptions.DefaultProfileImageType;
         }
 
@@ -92,6 +88,9 @@ public class LocalDriveProfileImageService : IProfileImageService
         _imageInfoRepository.DeleteProfileImageInfoAsync(profileId);
     }
 
+    private static string BuildFilePath(string imagesDirectoryName, string fileName) =>
+        Path.Combine(imagesDirectoryName, fileName);
+    
     private async Task WriteImageToLocalDriveAsync(string filePath, IFormFile image)
     {
         await using var file = File.OpenWrite(filePath);

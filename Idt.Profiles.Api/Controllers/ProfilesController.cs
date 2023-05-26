@@ -1,10 +1,12 @@
 using Idt.Profiles.Api.Controllers.BaseControllers;
+using Idt.Profiles.Api.SwaggerExamples;
 using Idt.Profiles.Dto.Dto;
 using Idt.Profiles.Dto.MappingExtensions;
 using Idt.Profiles.Services.ProfileImageService;
 using Idt.Profiles.Services.ProfileService;
 using Idt.Profiles.Shared.Exceptions.SystemCriticalExceptions;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace Idt.Profiles.Api.Controllers;
 
@@ -15,17 +17,17 @@ public class ProfilesController : BaseController
 {
     private readonly IProfileService _profileService;
     private readonly IProfileImageService _profileImageService;
-
-    private string BuildProfileImageEndpoint(Guid profileId) =>
-        Url.Action("DownloadProfileImage", "Profiles", values: new { profileId }, protocol: Request.Scheme) ??
-        throw new EndpointNotFoundException(nameof(DownloadProfileImageAsync));
-
+    
     /// <inheritdoc />
     public ProfilesController(IProfileService profileService, IProfileImageService profileImageService)
     {
         _profileService = profileService;
         _profileImageService = profileImageService;
     }
+    
+    private string BuildProfileImageEndpoint(Guid profileId) =>
+        Url.Action("DownloadProfileImage", "Profiles", values: new { profileId }, protocol: Request.Scheme) ??
+        throw new EndpointNotFoundException(nameof(DownloadProfileImageAsync));
 
     /// <summary>
     /// Returns profile information by profile id.
@@ -63,6 +65,7 @@ public class ProfilesController : BaseController
     /// <response code="201">Success. The user profile is created and returned.</response>
     [HttpPost]
     [ProducesResponseType(typeof(ProfileDisplayDto), 201)]
+    [SwaggerRequestExample(typeof(ProfileCreateUpdateDto), typeof(ProfileExample))]
     public async Task<ActionResult<ProfileDisplayDto>> CreateProfile([FromBody] ProfileCreateUpdateDto profile)
     {
         var savedProfile = await _profileService.CreateProfileAsync(profile);
@@ -96,6 +99,7 @@ public class ProfilesController : BaseController
     /// <response code="200">Success. The user profile is updated and returned.</response>
     [HttpPut("{profileId:guid}")]
     [ProducesResponseType(typeof(ProfileDisplayDto), 200)]
+    [SwaggerRequestExample(typeof(ProfileCreateUpdateDto), typeof(ProfileExample))]
     public async Task<ActionResult<ProfileDisplayDto>> UpdateProfile([FromRoute] Guid profileId,
         [FromBody] ProfileCreateUpdateDto profile)
     {

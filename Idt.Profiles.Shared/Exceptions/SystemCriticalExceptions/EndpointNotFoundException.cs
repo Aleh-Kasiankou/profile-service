@@ -11,5 +11,3 @@ public class EndpointNotFoundException : ServerRelatedException
         
     }
 }
-
-// TODO IMPROVE IMAGE URL BUILDING LOGIC

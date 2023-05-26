@@ -1,7 +1,7 @@
 using FluentValidation;
 using Idt.Profiles.Persistence.Models;
 
-namespace Idt.Profiles.Services.FluentValidationServices.Validators;
+namespace Idt.Profiles.Services.FluentValidationService.Validators;
 
 public class ProfileValidator : AbstractValidator<Profile>
 {

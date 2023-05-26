@@ -16,7 +16,14 @@
         <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
         <PackageReference Include="Serilog.Settings.Configuration" Version="7.0.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="7.0.6" />
     </ItemGroup>
+    
+   <!-- <ItemGroup>
+        <Content Include="..\wwwroot\sample_images\*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>-->
 
     <ItemGroup>
       <ProjectReference Include="..\Idt.Profiles.Services\Idt.Profiles.Services.csproj" />
@@ -27,14 +34,10 @@
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
+      <Content Update="..\wwwroot\sample_images\blank-profile-picture.webp">
+        <Link>profile_images\blank-profile-picture.webp</Link>
+      </Content>
     </ItemGroup>
-
-    <ItemGroup>
-        <Content Include="..\wwwroot\sample_images\*">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
-
     <PropertyGroup>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>

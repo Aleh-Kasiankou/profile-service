@@ -4,6 +4,7 @@ using Hangfire.Mongo;
 using Hangfire.Mongo.Migration.Strategies;
 using Hangfire.Mongo.Migration.Strategies.Backup;
 using Idt.Profiles.Api.Middleware.ExceptionHandling;
+using Idt.Profiles.Api.SwaggerExamples;
 using Idt.Profiles.Dto.Dto;
 using Idt.Profiles.Persistence.Models;
 using Idt.Profiles.Persistence.Repositories.ProfileImageRepository;
@@ -14,7 +15,7 @@ using Idt.Profiles.Services.AddressFormattingService;
 using Idt.Profiles.Services.AddressFormattingService.Implementations;
 using Idt.Profiles.Services.EventSyncService;
 using Idt.Profiles.Services.EventSyncService.Implementations;
-using Idt.Profiles.Services.FluentValidationServices.Validators;
+using Idt.Profiles.Services.FluentValidationService.Validators;
 using Idt.Profiles.Services.ProfileImageService;
 using Idt.Profiles.Services.ProfileImageService.Implementations;
 using Idt.Profiles.Services.ProfileService;
@@ -26,6 +27,7 @@ using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Packets;
 using Serilog;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace Idt.Profiles.Api.Extensions.Configuration;
 
@@ -107,8 +109,11 @@ public static class ConfigurationExtensions
                 "Idt.Profiles.Api.xml"));
             options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
                 "Idt.Profiles.Dto.xml"));
+            options.ExampleFilters();
         });
-
+        
+        services.AddSwaggerExamplesFromAssemblyOf<ProfileExample>();
+        
         return services;
     }
 

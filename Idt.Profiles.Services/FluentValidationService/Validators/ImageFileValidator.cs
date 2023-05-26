@@ -1,7 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 
-namespace Idt.Profiles.Services.FluentValidationServices.Validators;
+namespace Idt.Profiles.Services.FluentValidationService.Validators;
 
 public class ImageFileValidator : AbstractValidator<IFormFile>
 {

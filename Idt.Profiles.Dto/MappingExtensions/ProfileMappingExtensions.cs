@@ -10,7 +10,7 @@ public static class ProfileMappingExtensions
         return new ProfileDisplayDto
         {
             ProfileId = profile.ProfileId,
-            UserName = profile.LastName,
+            UserName = profile.UserName,
             FirstName = profile.FirstName,
             LastName = profile.LastName,
             Email = profile.Email,
