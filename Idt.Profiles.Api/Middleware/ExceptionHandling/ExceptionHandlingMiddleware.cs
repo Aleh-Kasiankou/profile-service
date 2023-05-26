@@ -21,7 +21,7 @@ public class ExceptionHandlingMiddleware : IMiddleware
         {
             Log.Debug(e, "Validation exception occured");
             var errorMessage = string.Join(". ", e.Errors);
-            await WriteExceptionMessageToResponse(errorMessage , StatusCodes.Status400BadRequest, context);
+            await WriteExceptionMessageToResponse(errorMessage, StatusCodes.Status400BadRequest, context);
         }
         catch (ClientRelatedException e)
         {
@@ -33,15 +33,22 @@ public class ExceptionHandlingMiddleware : IMiddleware
             Log.Warning(e, "Concurrency exception occured while working with database");
             await WriteExceptionMessageToResponse(e.Message, StatusCodes.Status400BadRequest, context);
         }
+        catch (RollbackSuccessException e)
+        {
+            Log.Warning(e, "Rollback occured while working with database");
+            await WriteExceptionMessageToResponse(e.Message, StatusCodes.Status500InternalServerError, context);
+        }
         catch (ServerRelatedException e)
         {
             Log.Error(e, "Server exception occured");
-            await WriteExceptionMessageToResponse(UnhandledExceptionMessage, StatusCodes.Status500InternalServerError, context);
+            await WriteExceptionMessageToResponse(UnhandledExceptionMessage, StatusCodes.Status500InternalServerError,
+                context);
         }
         catch (Exception e)
         {
             Log.Fatal(e, "Unhandled server exception occured");
-            await WriteExceptionMessageToResponse(UnhandledExceptionMessage, StatusCodes.Status500InternalServerError, context);
+            await WriteExceptionMessageToResponse(UnhandledExceptionMessage, StatusCodes.Status500InternalServerError,
+                context);
         }
     }
 
